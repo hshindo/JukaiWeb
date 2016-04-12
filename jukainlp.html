@@ -1,0 +1,63 @@
+<!doctype html>
+<html>
+<head>
+    <title>JukaiNLP Demo</title>
+    <style>
+        .sent {
+            color: blue;
+        }
+        .received {
+            color: green;
+        }
+        #editor {
+            margin: 0;
+            position: absolute;
+            top: 0;
+            bottom: 50px;
+            left: 0;
+            right: 0;
+            width: 800px;
+            font-size: 16pt
+        }
+    </style>
+</head>
+<body>
+
+<div id="content"></div>
+
+<!--
+<div id="user-input" style="position:absolute;bottom:50px">
+    <input name="text" type="text" style="width:800px;font-size:16pt;"/>
+</div>
+-->
+
+<div id="editor">some text</div>
+
+<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+<script src="http://mdaines.github.io/viz.js/bower_components/viz.js/viz.js"></script>
+<script src="http://hshindo.github.io/JukaiWeb/viz.js/viz.js./ace-1.2.3/ace.js"></script>
+<script type="text/javascript">
+    var editor = ace.edit("editor");
+    //editor.setTheme("ace/theme/twilight");
+    //editor.session.setMode("ace/mode/javascript");
+
+    $(function(){
+        var connection = new WebSocket('ws://'+window.location.host);
+        connection.onmessage = function(message){
+            var data = JSON.parse(message.data);
+            $("#content").empty();
+            for (var i = 0; i < data.length; i++) {
+                $("#content").append($("<p class='received'></p>").html(data[i]));
+            }
+        }
+        //$("#user-input input[name=clear]").click(function(){
+        //$("#content").empty();
+        //});
+        $("#user-input input[name=text]").keyup(function(e){
+            message = $("#user-input input[name=text]").val();
+            connection.send(message);
+        });
+    });
+</script>
+</body>
+</html>
