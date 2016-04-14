@@ -44,4 +44,5 @@ httph = HttpHandler() do req::Request, res::Response
 end
 server = Server(httph, wsh)
 #run(server, ip"163.221.116.33", 5000) # chasen.naist.jp
-run(server, 80) # localhost
+run(server, ip"158.199.141.203", 80)
+#run(server, 80) # localhost
