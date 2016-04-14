@@ -5,8 +5,9 @@ using Jukai
 using Jukai.Tokenization
 
 wsh = WebSocketHandler() do req, client
-  println("Client id: $(client.id) is connected.")
+  println("Client: $(client.id) is connected.")
   while true
+    println("Request from $(client.id) recieved.")
     msg = bytestring(read(client))
     #doc = tokenize(msg)
     #out = map(s -> join(s, " "), doc)
@@ -30,11 +31,7 @@ wsh = WebSocketHandler() do req, client
     doc = []
     push!(doc, tokens)
     res = JSON.json(doc)
-    println(res)
     write(client, res)
-    #for s in doc
-    #  write(client, join(s, " "))
-    #end
   end
 end
 
