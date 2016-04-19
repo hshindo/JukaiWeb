@@ -101,8 +101,8 @@ function addProperty(sent) {
     for (var id in tokens) {
         var t = tokens[id];
         if (t.head == 0) {
-            //t.y = 0;
-            //setPosition(t);
+            t.y = 0;
+            setPosition(t);
         }
     }
 }
