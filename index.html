@@ -91,28 +91,19 @@ function addProperty(sent) {
         var h = tokens[t.head];
         h.deps.push(t);
     }
-    function aaa(token) {
+    function setPosition(token) {
         var deps = token.deps;
         for (var i = 0; i < deps.length; i++) {
             deps[i].y = token.y + 1;
-            aaa(deps[i]);
+            setPosition(deps[i]);
         }
     }
     for (var id in tokens) {
         var t = tokens[id];
         if (t.head == 0) {
-            t.y = 0;
-            aaa(t);
+            //t.y = 0;
+            //setPosition(t);
         }
-
-        //if (t.deps.length != 0) { continue; }
-        //t['y'] = 0;
-        //while (t.head != 0) {
-        //    h = tokens[t.head];
-        //    if ('y' in h) { break; }
-        //    h['y'] = t.y - 100;
-        //    t = h;
-        //}
     }
 }
 

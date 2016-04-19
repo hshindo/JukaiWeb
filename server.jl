@@ -7,7 +7,7 @@ using Jukai.Tokenization
 wsh = WebSocketHandler() do req, client
   println("Client: $(client.id) is connected.")
   while true
-    println("Request from $(client.id) recieved.")
+    #println("Request from $(client.id) recieved.")
     msg = bytestring(read(client))
     #doc = tokenize(msg)
     #out = map(s -> join(s, " "), doc)
@@ -40,5 +40,4 @@ httph = HttpHandler() do req::Request, res::Response
   Response(onepage)
 end
 server = Server(httph, wsh)
-#run(server, ip"163.221.116.33", 5000) # chasen.naist.jp
 run(server, 3000) # localhost
