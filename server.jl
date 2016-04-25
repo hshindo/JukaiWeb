@@ -5,9 +5,30 @@ using JLD
 using Jukai
 using Merlin
 
-#joinpath(dirname(@__FILE__), "models/mm_10.jld")
-#const token_model = load("models/nn_30.jld")
+const tokenizer = load("models/tokenizer_50.jld", "tokenizer")
 
+wsh = WebSocketHandler() do req, client
+  println("Client: $(client.id) is connected.")
+  while true
+    #println("Request from $(client.id) recieved.")
+    msg = bytestring(read(client))
+    chars = convert(Vector{Char}, msg)
+    doc = decode(tokenizer, chars)
+    doc = map(x -> map(to_dict, x), doc)
+    res = JSON.json(doc)
+    #println(res)
+    write(client, res)
+  end
+end
+
+onepage = readall(joinpath(dirname(@__FILE__), "index.html"))
+httph = HttpHandler() do req::Request, res::Response
+  Response(onepage)
+end
+server = Server(httph, wsh)
+run(server, 3000)
+
+#=
 const sample_tokens = [
   Token(1, 6, 1, "Pierre", 1, "NNP", -2, 2),
   Token(2, "Vinken", 2, "NNP", -1, 8),
@@ -23,29 +44,4 @@ const sample_tokens = [
   Token(12, "Nov.", 12, "NNP", -2, 9),
   Token(13, "29", 13, "CD", -3, 12),
   Token(14, ".", 13, ".", -1, 8)]
-
-function aaa(str::AbstractString)
-  chars = convert(Vector{Char}, str)
-
-end
-
-wsh = WebSocketHandler() do req, client
-  println("Client: $(client.id) is connected.")
-  while true
-    #println("Request from $(client.id) recieved.")
-    msg = bytestring(read(client))
-    #doc = tokenize(token_model, msg)
-    #doc = map(sent -> map(to_dict, sent), doc)
-    #doc = []
-    #push!(doc, sample_tokens)
-    #res = JSON.json(doc)
-    #write(client, res)
-  end
-end
-
-onepage = readall(joinpath(dirname(@__FILE__), "index.html"))
-httph = HttpHandler() do req::Request, res::Response
-  Response(onepage)
-end
-server = Server(httph, wsh)
-run(server, 3000)
+=#

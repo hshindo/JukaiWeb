@@ -5,14 +5,14 @@
     <style>
         #view {
             width: 1000px;
-            height: 400px;
+            height: 500px;
             border: 1px solid lightgray;
         }
         #editor {
             position: absolute;
-            bottom: 50px;
+            bottom: 0px;
             width: 1000px;
-            height: 300px;
+            height: 500px;
         }
         p.sentence {
             font-size: 16pt;
@@ -32,6 +32,27 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.16.0/vis.min.js"></script>
 <script src="https://ace.c9.io/build/src/ace.js" type="text/javascript" charset="utf-8"></script>
 <script type="text/javascript">
+var bratLocation = 'http://weaver.nlplab.org/~brat/demo/v1.3';
+head.js(
+    // External libraries
+    bratLocation + '/client/lib/jquery.min.js',
+    bratLocation + '/client/lib/jquery.svg.min.js',
+    bratLocation + '/client/lib/jquery.svgdom.min.js',
+    // brat helper modules
+    bratLocation + '/client/src/configuration.js',
+    bratLocation + '/client/src/util.js',
+    bratLocation + '/client/src/annotation_log.js',
+    bratLocation + '/client/lib/webfont.js',
+    // brat modules
+    bratLocation + '/client/src/dispatcher.js',
+    bratLocation + '/client/src/url_monitor.js',
+    bratLocation + '/client/src/visualizer.js'
+);
+var webFontURLs = [
+    bratLocation + '/static/fonts/Astloch-Bold.ttf',
+    bratLocation + '/static/fonts/PT_Sans-Caption-Web-Regular.ttf',
+    bratLocation + '/static/fonts/Liberation_Sans-Regular.ttf'
+];
 
 var connection = new WebSocket('ws://' + window.location.host);
 var editor = ace.edit("editor");
@@ -103,53 +124,45 @@ var collData = {
     ]
 }
 
+var testdata = {
+    // Our text of choice
+    text     : "Ed O'Kelley.\nAAA BBB",
+    entities : [
+        ['T1', 'Person', [[0, 2]]],
+        ['T2', 'Person', [[3, 11]]],
+        ['T3', 'Person', [[13,16]]]
+    ]
+};
+
+var dispatcher;
+head.ready(function() {
+    //dispatcher = Util.embed('view', collData, docData, webFontURLs);
+    dispatcher = Util.embed('view', collData, {}, webFontURLs);
+});
 $(function(){
     connection.onmessage = function(msg){
         var doc = JSON.parse(msg.data);
-        var brat = {};
-        $("#view").empty();
-        for (var i = 0; i < 1; i++) {
+        var text = "";
+        var entities = [];
+        var id = 1;
+        //$("#view").empty();
+        for (var i = 0; i < doc.length; i++) {
             var sent = doc[i];
-            //brat["text"] = sent.map(t => t.form).join(" ");
-            //var entities = [];
-            //for (var k = 0; k < sent.length; k++) {
-            //    var t = sent[k];
-            //    var e = [ t.id, t.cat, [[ t.start, t.end ]];
-            //    entities.push(e);
-            //}
-            //brat["entities"] = entities;
-            //$("#tokens").append($("<p class='sentence'></p>").html(line));
-            //addProperty(sent);
-            //draw(sent);
+            text += sent.map(t => t.form).join(" ") + "\n";
+            for (var k = 0; k < sent.length; k++) {
+                var t = sent[k];
+                var a = t.pos - 1 + t.form.length;
+                var e = [ id, 'Person', [[ t.pos-1, a ]] ];
+                id += 1;
+                entities.push(e);
+            }
         }
-        head.ready(function() {
-            Util.embed('view', collData, brat, webFontURLs);
-        });
+        var brat = [{ 'text': text, 'entities': entities }];
+        dispatcher.post('requestRenderData', brat);
     }
 });
 </script>
 <script type="text/javascript">
-var bratLocation = 'http://weaver.nlplab.org/~brat/demo/v1.3';
-head.js(
-    // External libraries
-    bratLocation + '/client/lib/jquery.min.js',
-    bratLocation + '/client/lib/jquery.svg.min.js',
-    bratLocation + '/client/lib/jquery.svgdom.min.js',
-    // brat helper modules
-    bratLocation + '/client/src/configuration.js',
-    bratLocation + '/client/src/util.js',
-    bratLocation + '/client/src/annotation_log.js',
-    bratLocation + '/client/lib/webfont.js',
-    // brat modules
-    bratLocation + '/client/src/dispatcher.js',
-    bratLocation + '/client/src/url_monitor.js',
-    bratLocation + '/client/src/visualizer.js'
-);
-var webFontURLs = [
-    bratLocation + '/static/fonts/Astloch-Bold.ttf',
-    bratLocation + '/static/fonts/PT_Sans-Caption-Web-Regular.ttf',
-    bratLocation + '/static/fonts/Liberation_Sans-Regular.ttf'
-];
 </script>
 </body>
 </html>
