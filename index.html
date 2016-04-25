@@ -3,34 +3,29 @@
 <head>
     <title>JukaiWeb</title>
     <style>
-        .received {
-        }
-        #editor {
-            margin: 0;
-            position: absolute;
-            top: 500px;
-            bottom: 50px;
-            width: 1000px;
-        }
-        #mynetwork {
+        #view {
             width: 1000px;
             height: 400px;
             border: 1px solid lightgray;
         }
+        #editor {
+            position: absolute;
+            bottom: 50px;
+            width: 1000px;
+            height: 300px;
+        }
+        p.sentence {
+            font-size: 16pt;
+            font-family: 'Ubuntu', sans-serif;
+            color: navy;
+        }
     </style>
+    <link href='https://fonts.googleapis.com/css?family=Ubuntu' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="http://weaver.nlplab.org/~brat/demo/latest/style-vis.css"/>
+    <script type="text/javascript" src="http://weaver.nlplab.org/~brat/demo/latest/client/lib/head.load.min.js"></script>
 </head>
 <body>
-
-<div id="results"></div>
-
-<div id="mynetwork"></div>
-
-<!--
-<div id="user-input" style="position:absolute;bottom:50px">
-    <input name="text" type="text" style="width:800px;font-size:16pt;"/>
-</div>
--->
-
+<div id="view"></div>
 <div id="editor"></div>
 
 <script src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
@@ -38,14 +33,16 @@
 <script src="https://ace.c9.io/build/src/ace.js" type="text/javascript" charset="utf-8"></script>
 <script type="text/javascript">
 
-var connection = new WebSocket('ws://' + window.location.host + "/jukaiweb/");
+var connection = new WebSocket('ws://' + window.location.host);
 var editor = ace.edit("editor");
 editor.setFontSize(20);
+editor.setTheme("ace/theme/monokai");
 editor.getSession().setUseWrapMode(true);
 editor.getSession().setTabSize(2);
 editor.focus();
 editor.getSession().on('change', function(e) {
     var data = editor.getValue();
+    if (data.length == 0) { return; }
     connection.send(data);
 });
 
@@ -54,11 +51,11 @@ function draw(sent) {
     var edges = [];
     for (var i = 0; i < sent.length; i++) {
         var t = sent[i];
-        nodes.push({id:t.id, label:t.form+'\n'+t.cat, x:t.x*100, y:t.y*100});
-        edges.push({from:t.id, to:t.head});
+        nodes.push({id:t.id, label:t.form+'\n'+t.tag, x:t.x*100, y:t.y*100});
+        edges.push({from:t.id, to:t.headid});
     }
 
-    var container = document.getElementById('mynetwork');
+    var container = document.getElementById('view');
     var g = {nodes:nodes, edges:edges};
     var options = {
         nodes: {
@@ -87,8 +84,8 @@ function addProperty(sent) {
     for (var id in tokens) {
         var t = tokens[id];
         t['x'] = id;
-        if (t.head == 0) continue;
-        var h = tokens[t.head];
+        if (t.headid == 0) continue;
+        var h = tokens[t.headid];
         h.deps.push(t);
     }
     function setPosition(token) {
@@ -100,33 +97,134 @@ function addProperty(sent) {
     }
     for (var id in tokens) {
         var t = tokens[id];
-        if (t.head == 0) {
+        if (t.headid == 0) {
             t.y = 0;
             setPosition(t);
         }
     }
 }
 
+var collData = {
+    "entity_types": [
+        {
+            "type": "Person",
+            "labels": [ "Person", "Per" ],
+            "bgColor": "#7fa2ff",
+            "borderColor": "darken"
+        }
+    ],
+    "entity_attribute_types": [
+        {
+            "type": "Notorious",
+            "values": {
+                "Notorious": { "glyph": "★" }
+            },
+            "bool": "Notorious"
+        }
+    ],
+    "relation_types": [
+        {
+            "type": "Anaphora",
+            "labels": [ "Anaphora", "Ana" ],
+            "dashArray": "3,3",
+            "color": "purple",
+            "args": [
+                {
+                    "role": "Anaphor",
+                    "targets": [ "Person" ]
+                },
+                {
+                    "role": "Entity",
+                    "targets": [ "Person" ]
+                }
+            ]
+        }
+    ],
+    "event_types": [
+        {
+            "type": "Assassination",
+            "labels": [ "Assassination", "Assas" ],
+            "bgColor": "lightgreen",
+            "borderColor": "darken",
+            "arcs": [
+                {
+                    "type": "Victim",
+                    "labels": [ "Victim", "Vict" ]
+                },
+                {
+                    "type": "Perpetrator",
+                    "labels": [ "Perpetrator", "Perp" ],
+                    "color": "green"
+                }
+            ]
+        }
+    ]
+}
+var docData = {
+    "text": "Ed O'Kelley was the man who shot the man who shot Jesse James.",
+    "entities": [
+        [
+            "T1",
+            "Person",
+            [[ 0, 11 ]]
+        ],
+        [
+            "T2",
+            "Person",
+            [ [ 20, 23 ] ]
+        ],
+        [
+            "T3",
+            "Person",
+            [ [ 37, 40 ] ]
+        ],
+        [
+            "T4",
+            "Person",
+            [ [ 50, 61 ] ]
+        ]
+    ]
+}
+
 $(function(){
     connection.onmessage = function(msg){
         var doc = JSON.parse(msg.data);
-        $("#results").empty();
-
+        //$("#tokens").empty();
         for (var i = 0; i < doc.length; i++) {
             var sent = doc[i];
-            addProperty(sent);
-            //alert(sent[0].x);
-            draw(sent);
-            //$("#results").append($("<p class='received'></p>").html(data[i]));
+            var text = sent.map(t => t.form).join(" ");
+            //$("#tokens").append($("<p class='sentence'></p>").html(line));
+            //addProperty(sent);
+            //draw(sent);
         }
-        //draw();
     }
-    //$("#user-input input[name=text]").keyup(function(e){
-    //    message = $("#user-input input[name=text]").val();
-    //    connection.send(message);
-    //});
 });
-
+</script>
+<script type="text/javascript">
+var bratLocation = 'http://weaver.nlplab.org/~brat/demo/v1.3';
+head.js(
+    // External libraries
+    bratLocation + '/client/lib/jquery.min.js',
+    bratLocation + '/client/lib/jquery.svg.min.js',
+    bratLocation + '/client/lib/jquery.svgdom.min.js',
+    // brat helper modules
+    bratLocation + '/client/src/configuration.js',
+    bratLocation + '/client/src/util.js',
+    bratLocation + '/client/src/annotation_log.js',
+    bratLocation + '/client/lib/webfont.js',
+    // brat modules
+    bratLocation + '/client/src/dispatcher.js',
+    bratLocation + '/client/src/url_monitor.js',
+    bratLocation + '/client/src/visualizer.js'
+);
+var webFontURLs = [
+    bratLocation + '/static/fonts/Astloch-Bold.ttf',
+    bratLocation + '/static/fonts/PT_Sans-Caption-Web-Regular.ttf',
+    bratLocation + '/static/fonts/Liberation_Sans-Regular.ttf'
+];
+head.ready(function() {
+    Util.embed('view', collData, docData, webFontURLs);
+});
 </script>
 </body>
 </html>
