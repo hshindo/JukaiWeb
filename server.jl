@@ -8,9 +8,8 @@ using Merlin
 #joinpath(dirname(@__FILE__), "models/mm_10.jld")
 #const token_model = load("models/nn_30.jld")
 
-#=
 const sample_tokens = [
-  Token(1, "Pierre", 1, "NNP", -2, 2),
+  Token(1, 6, 1, "Pierre", 1, "NNP", -2, 2),
   Token(2, "Vinken", 2, "NNP", -1, 8),
   Token(3, ",", 3, ",", -2, 2),
   Token(4, "61", 4, "CD", -4, 5),
@@ -24,7 +23,11 @@ const sample_tokens = [
   Token(12, "Nov.", 12, "NNP", -2, 9),
   Token(13, "29", 13, "CD", -3, 12),
   Token(14, ".", 13, ".", -1, 8)]
-=#
+
+function aaa(str::AbstractString)
+  chars = convert(Vector{Char}, str)
+
+end
 
 wsh = WebSocketHandler() do req, client
   println("Client: $(client.id) is connected.")

@@ -20,9 +20,9 @@
             color: navy;
         }
     </style>
-    <link href='https://fonts.googleapis.com/css?family=Ubuntu' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" type="text/css" href="http://weaver.nlplab.org/~brat/demo/latest/style-vis.css"/>
-    <script type="text/javascript" src="http://weaver.nlplab.org/~brat/demo/latest/client/lib/head.load.min.js"></script>
+<link href='https://fonts.googleapis.com/css?family=Ubuntu' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" type="text/css" href="http://weaver.nlplab.org/~brat/demo/latest/style-vis.css"/>
+<script type="text/javascript" src="http://weaver.nlplab.org/~brat/demo/latest/client/lib/head.load.min.js"></script>
 </head>
 <body>
 <div id="view"></div>
@@ -36,7 +36,7 @@
 var connection = new WebSocket('ws://' + window.location.host);
 var editor = ace.edit("editor");
 editor.setFontSize(20);
-editor.setTheme("ace/theme/monokai");
+//editor.setTheme("ace/theme/monokai");
 editor.getSession().setUseWrapMode(true);
 editor.getSession().setTabSize(2);
 editor.focus();
@@ -45,64 +45,6 @@ editor.getSession().on('change', function(e) {
     if (data.length == 0) { return; }
     connection.send(data);
 });
-
-function draw(sent) {
-    var nodes = [];
-    var edges = [];
-    for (var i = 0; i < sent.length; i++) {
-        var t = sent[i];
-        nodes.push({id:t.id, label:t.form+'\n'+t.tag, x:t.x*100, y:t.y*100});
-        edges.push({from:t.id, to:t.headid});
-    }
-
-    var container = document.getElementById('view');
-    var g = {nodes:nodes, edges:edges};
-    var options = {
-        nodes: {
-            font: {
-                size: 28
-            },
-            shadow: true,
-            shape: 'text'
-        },
-        edges: {
-            //smooth: {type: 'dynamic'},
-        },
-        physics:false
-    }
-    new vis.Network(container, g, options);
-}
-
-function addProperty(sent) {
-    // deps: dependency ids
-    var tokens = {};
-    for (var i = 0; i < sent.length; i++) {
-        var t = sent[i];
-        t['deps'] = [];
-        tokens[t.id] = t;
-    }
-    for (var id in tokens) {
-        var t = tokens[id];
-        t['x'] = id;
-        if (t.headid == 0) continue;
-        var h = tokens[t.headid];
-        h.deps.push(t);
-    }
-    function setPosition(token) {
-        var deps = token.deps;
-        for (var i = 0; i < deps.length; i++) {
-            deps[i].y = token.y + 1;
-            setPosition(deps[i]);
-        }
-    }
-    for (var id in tokens) {
-        var t = tokens[id];
-        if (t.headid == 0) {
-            t.y = 0;
-            setPosition(t);
-        }
-    }
-}
 
 var collData = {
     "entity_types": [
@@ -160,43 +102,29 @@ var collData = {
         }
     ]
 }
-var docData = {
-    "text": "Ed O'Kelley was the man who shot the man who shot Jesse James.",
-    "entities": [
-        [
-            "T1",
-            "Person",
-            [[ 0, 11 ]]
-        ],
-        [
-            "T2",
-            "Person",
-            [ [ 20, 23 ] ]
-        ],
-        [
-            "T3",
-            "Person",
-            [ [ 37, 40 ] ]
-        ],
-        [
-            "T4",
-            "Person",
-            [ [ 50, 61 ] ]
-        ]
-    ]
-}
 
 $(function(){
     connection.onmessage = function(msg){
         var doc = JSON.parse(msg.data);
-        //$("#tokens").empty();
-        for (var i = 0; i < doc.length; i++) {
+        var brat = {};
+        $("#view").empty();
+        for (var i = 0; i < 1; i++) {
             var sent = doc[i];
-            var text = sent.map(t => t.form).join(" ");
+            //brat["text"] = sent.map(t => t.form).join(" ");
+            //var entities = [];
+            //for (var k = 0; k < sent.length; k++) {
+            //    var t = sent[k];
+            //    var e = [ t.id, t.cat, [[ t.start, t.end ]];
+            //    entities.push(e);
+            //}
+            //brat["entities"] = entities;
             //$("#tokens").append($("<p class='sentence'></p>").html(line));
             //addProperty(sent);
             //draw(sent);
         }
+        head.ready(function() {
+            Util.embed('view', collData, brat, webFontURLs);
+        });
     }
 });
 </script>
@@ -222,9 +150,6 @@ var webFontURLs = [
     bratLocation + '/static/fonts/PT_Sans-Caption-Web-Regular.ttf',
     bratLocation + '/static/fonts/Liberation_Sans-Regular.ttf'
 ];
-head.ready(function() {
-    Util.embed('view', collData, docData, webFontURLs);
-});
 </script>
 </body>
 </html>
