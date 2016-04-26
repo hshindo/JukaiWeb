@@ -5,18 +5,32 @@ using JLD
 using Jukai
 using Merlin
 
+include("conf.jl")
+
+const clients = Dict()
 const tokenizer = load("models/tokenizer_50.jld", "tokenizer")
+const conf = begin
+  e = readconf(joinpath(dirname(@__FILE__), "conf/visual.conf"))
+  d = Dict("entity_types" => e)
+  JSON.json(d)
+end
 
 wsh = WebSocketHandler() do req, client
   println("Client: $(client.id) is connected.")
+  write(client, conf)
   while true
     #println("Request from $(client.id) recieved.")
     msg = bytestring(read(client))
+    #if msg == "::conf"
+    #  write(client, conf)
+    #  continue
+    #end
+
+    #length(msg) > 1000 && continue
     chars = convert(Vector{Char}, msg)
     doc = decode(tokenizer, chars)
     doc = map(x -> map(to_dict, x), doc)
     res = JSON.json(doc)
-    #println(res)
     write(client, res)
   end
 end

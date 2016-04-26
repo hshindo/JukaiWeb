@@ -12,7 +12,7 @@
             position: absolute;
             bottom: 0px;
             width: 1000px;
-            height: 500px;
+            height: 400px;
         }
         p.sentence {
             font-size: 16pt;
@@ -67,7 +67,7 @@ editor.getSession().on('change', function(e) {
     connection.send(data);
 });
 
-var collData = {
+var testcoll = {
     "entity_types": [
         {
             "type": "Person",
@@ -77,7 +77,6 @@ var collData = {
         }
     ]
 }
-
 var testdata = {
     // Our text of choice
     text     : "Ed O'Kelley.\nAAA BBB",
@@ -89,11 +88,17 @@ var testdata = {
 };
 
 var dispatcher;
-head.ready(function() {
-    dispatcher = Util.embed('view', collData, {}, webFontURLs);
-});
+var conf;
 $(function(){
     connection.onmessage = function(msg){
+        if (conf === undefined) {
+            conf = JSON.parse(msg.data);
+            head.ready(function() {
+                dispatcher = Util.embed('view', conf, {}, webFontURLs);
+            });
+        }
+        if (dispatcher === undefined) return;
+
         var doc = JSON.parse(msg.data);
         var text = "";
         var entities = [];
