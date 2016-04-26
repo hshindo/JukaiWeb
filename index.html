@@ -32,7 +32,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.16.0/vis.min.js"></script>
 <script src="https://ace.c9.io/build/src/ace.js" type="text/javascript" charset="utf-8"></script>
 <script type="text/javascript">
-var bratLocation = 'http://weaver.nlplab.org/~brat/demo/v1.3';
+var bratLocation = 'http://weaver.nlplab.org/~brat/demo/latest';
 head.js(
     // External libraries
     bratLocation + '/client/lib/jquery.min.js',
@@ -75,52 +75,6 @@ var collData = {
             "bgColor": "#7fa2ff",
             "borderColor": "darken"
         }
-    ],
-    "entity_attribute_types": [
-        {
-            "type": "Notorious",
-            "values": {
-                "Notorious": { "glyph": "★" }
-            },
-            "bool": "Notorious"
-        }
-    ],
-    "relation_types": [
-        {
-            "type": "Anaphora",
-            "labels": [ "Anaphora", "Ana" ],
-            "dashArray": "3,3",
-            "color": "purple",
-            "args": [
-                {
-                    "role": "Anaphor",
-                    "targets": [ "Person" ]
-                },
-                {
-                    "role": "Entity",
-                    "targets": [ "Person" ]
-                }
-            ]
-        }
-    ],
-    "event_types": [
-        {
-            "type": "Assassination",
-            "labels": [ "Assassination", "Assas" ],
-            "bgColor": "lightgreen",
-            "borderColor": "darken",
-            "arcs": [
-                {
-                    "type": "Victim",
-                    "labels": [ "Victim", "Vict" ]
-                },
-                {
-                    "type": "Perpetrator",
-                    "labels": [ "Perpetrator", "Perp" ],
-                    "color": "green"
-                }
-            ]
-        }
     ]
 }
 
@@ -136,7 +90,6 @@ var testdata = {
 
 var dispatcher;
 head.ready(function() {
-    //dispatcher = Util.embed('view', collData, docData, webFontURLs);
     dispatcher = Util.embed('view', collData, {}, webFontURLs);
 });
 $(function(){
@@ -157,8 +110,8 @@ $(function(){
                 entities.push(e);
             }
         }
-        var brat = [{ 'text': text, 'entities': entities }];
-        dispatcher.post('requestRenderData', brat);
+        var brat = { 'text': text, 'entities': entities };
+        dispatcher.post('requestRenderData', [brat]);
     }
 });
 </script>
