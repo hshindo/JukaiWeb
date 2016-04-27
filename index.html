@@ -12,7 +12,7 @@
             position: absolute;
             bottom: 0px;
             width: 1000px;
-            height: 400px;
+            height: 300px;
         }
         p.sentence {
             font-size: 16pt;
@@ -25,6 +25,12 @@
 <script type="text/javascript" src="http://weaver.nlplab.org/~brat/demo/latest/client/lib/head.load.min.js"></script>
 </head>
 <body>
+<!-- override a few style-vis.css settings for the embedded version to make things larger -->
+<style type="text/css">
+text { font-size: 20px; }
+.span text { font-size: 16px; }
+.arcs text { font-size: 15px; }
+</style>
 <div id="view"></div>
 <div id="editor"></div>
 
@@ -56,7 +62,7 @@ var webFontURLs = [
 
 var connection = new WebSocket('ws://' + window.location.host);
 var editor = ace.edit("editor");
-editor.setFontSize(20);
+editor.setFontSize(24);
 //editor.setTheme("ace/theme/monokai");
 editor.getSession().setUseWrapMode(true);
 editor.getSession().setTabSize(2);
@@ -110,7 +116,7 @@ $(function(){
             for (var k = 0; k < sent.length; k++) {
                 var t = sent[k];
                 var a = t.pos - 1 + t.form.length;
-                var e = [ id, 'Person', [[ t.pos-1, a ]] ];
+                var e = [ id, t.cat, [[ t.pos-1, a ]] ];
                 id += 1;
                 entities.push(e);
             }

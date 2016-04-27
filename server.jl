@@ -3,6 +3,8 @@ using WebSockets
 using JSON
 using JLD
 using Jukai
+using Jukai.Tokenization
+using Jukai.POSTagging
 using Merlin
 
 include("conf.jl")
@@ -15,22 +17,28 @@ const conf = begin
   JSON.json(d)
 end
 
+const postagger = begin
+  println("training postagger...")
+  p = POSTagger()
+  path = "C:/Users/shindo/Dropbox/tagging"
+  POSTagging.train(p, "$(path)/wsj_00-18.conll", "$(path)/wsj_22-24.conll")
+  println("finish.")
+  p
+end
+
 wsh = WebSocketHandler() do req, client
   println("Client: $(client.id) is connected.")
   write(client, conf)
   while true
     #println("Request from $(client.id) recieved.")
     msg = bytestring(read(client))
-    #if msg == "::conf"
-    #  write(client, conf)
-    #  continue
-    #end
-
-    #length(msg) > 1000 && continue
+    length(msg) > 1000 && continue
     chars = convert(Vector{Char}, msg)
-    doc = decode(tokenizer, chars)
+    doc = Tokenization.decode(tokenizer, chars)
+    POSTagging.decode!(postagger, doc)
     doc = map(x -> map(to_dict, x), doc)
     res = JSON.json(doc)
+    #println(res)
     write(client, res)
   end
 end
