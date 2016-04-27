@@ -10,7 +10,7 @@ using Merlin
 include("conf.jl")
 
 const clients = Dict()
-const tokenizer = load("models/tokenizer_50.jld", "tokenizer")
+const tokenizer = load("data/tokenizer_50.jld", "tokenizer")
 const conf = begin
   e = readconf(joinpath(dirname(@__FILE__),"conf/visual.conf"))
   d = Dict("entity_types" => e)
@@ -20,7 +20,7 @@ end
 const postagger = begin
   println("training postagger...")
   p = POSTagger()
-  POSTagging.train(p, "models/wsj_00-18.conll", "models/wsj_22-24.conll")
+  POSTagging.train(p, "data/wsj_00-18.conll", "data/wsj_22-24.conll")
   println("finish.")
   p
 end
