@@ -10,9 +10,10 @@ using Merlin
 include("conf.jl")
 
 const clients = Dict()
+const path = dirname(@__FILE__)
 const tokenizer = load("models/tokenizer_50.jld", "tokenizer")
 const conf = begin
-  e = readconf(joinpath(dirname(@__FILE__), "conf/visual.conf"))
+  e = readconf(joinpath(path,"conf/visual.conf"))
   d = Dict("entity_types" => e)
   JSON.json(d)
 end
@@ -20,8 +21,7 @@ end
 const postagger = begin
   println("training postagger...")
   p = POSTagger()
-  path = "C:/Users/shindo/Dropbox/tagging"
-  POSTagging.train(p, "$(path)/wsj_00-18.conll", "$(path)/wsj_22-24.conll")
+  POSTagging.train(p, "$(path)/models/wsj_00-18.conll", "$(path)/models/wsj_22-24.conll")
   println("finish.")
   p
 end
