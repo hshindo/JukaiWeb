@@ -60,7 +60,7 @@ var webFontURLs = [
     bratLocation + '/static/fonts/Liberation_Sans-Regular.ttf'
 ];
 
-var connection = new WebSocket('ws://' + window.location.host + '/jukaiweb');
+var connection = new WebSocket('ws://' + window.location.host);
 var editor = ace.edit("editor");
 editor.setFontSize(24);
 //editor.setTheme("ace/theme/monokai");
